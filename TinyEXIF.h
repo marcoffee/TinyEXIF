@@ -9,25 +9,25 @@
   Based on the easyexif library (2013 version)
     https://github.com/mayanklahiri/easyexif
   of Mayank Lahiri (mlahiri@gmail.com).
-  
-  Redistribution and use in source and binary forms, with or without 
+
+  Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
 
-   - Redistributions of source code must retain the above copyright notice, 
+   - Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
-   - Redistributions in binary form must reproduce the above copyright notice, 
-     this list of conditions and the following disclaimer in the documentation 
+   - Redistributions in binary form must reproduce the above copyright notice,
+     this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY EXPRESS 
-  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
-  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN 
-  NO EVENT SHALL THE FREEBSD PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY 
-  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
-  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY EXPRESS
+  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
+  NO EVENT SHALL THE FREEBSD PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
   EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
@@ -36,6 +36,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
 #define TINYEXIF_MAJOR_VERSION 1
 #define TINYEXIF_MINOR_VERSION 0
@@ -115,13 +116,13 @@ public:
 	int parseFrom(const uint8_t* data, unsigned length);
 
 	// Parsing function for an EXIF segment. This is used internally by parseFrom()
-	// but can be called for special cases where only the EXIF section is 
+	// but can be called for special cases where only the EXIF section is
 	// available (i.e., a blob starting with the bytes "Exif\0\0").
 	int parseFromEXIFSegment(const uint8_t* buf, unsigned len);
 
 #ifndef TINYEXIF_NO_XMP_SUPPORT
 	// Parsing function for an XMP segment. This is used internally by parseFrom()
-	// but can be called for special cases where only the XMP section is 
+	// but can be called for special cases where only the XMP section is
 	// available (i.e., a blob starting with the bytes "http://ns.adobe.com/xap/1.0/\0").
 	int parseFromXMPSegment(const uint8_t* buf, unsigned len);
 	int parseFromXMPSegmentXML(const char* szXML, unsigned len);
@@ -144,37 +145,37 @@ private:
 public:
 	// Data fields
 	uint32_t Fields;                    // Store if EXIF and/or XMP data fields are available
-	uint32_t ImageWidth;                // Image width reported in EXIF data
-	uint32_t ImageHeight;               // Image height reported in EXIF data
-	uint32_t RelatedImageWidth;         // Original image width reported in EXIF data
-	uint32_t RelatedImageHeight;        // Original image height reported in EXIF data
-	std::string ImageDescription;       // Image description
-	std::string Make;                   // Camera manufacturer's name
-	std::string Model;                  // Camera model
-	std::string SerialNumber;           // Serial number of the body of the camera
-	uint16_t Orientation;               // Image orientation, start of data corresponds to
+	std::optional<uint32_t> ImageWidth;                // Image width reported in EXIF data
+	std::optional<uint32_t> ImageHeight;               // Image height reported in EXIF data
+	std::optional<uint32_t> RelatedImageWidth;         // Original image width reported in EXIF data
+	std::optional<uint32_t> RelatedImageHeight;        // Original image height reported in EXIF data
+	std::optional<std::string> ImageDescription;       // Image description
+	std::optional<std::string> Make;                   // Camera manufacturer's name
+	std::optional<std::string> Model;                  // Camera model
+	std::optional<std::string> SerialNumber;           // Serial number of the body of the camera
+	std::optional<uint16_t> Orientation;               // Image orientation, start of data corresponds to
 									    // 0: unspecified in EXIF data
 									    // 1: upper left of image
 									    // 3: lower right of image
 									    // 6: upper right of image
 									    // 8: lower left of image
 									    // 9: undefined
-	double XResolution;                 // Number of pixels per ResolutionUnit in the ImageWidth direction
-	double YResolution;                 // Number of pixels per ResolutionUnit in the ImageLength direction
-	uint16_t ResolutionUnit;            // Unit of measurement for XResolution and YResolution
+	std::optional<double> XResolution;                 // Number of pixels per ResolutionUnit in the ImageWidth direction
+	std::optional<double> YResolution;                 // Number of pixels per ResolutionUnit in the ImageLength direction
+	std::optional<uint16_t> ResolutionUnit;            // Unit of measurement for XResolution and YResolution
 									    // 1: no absolute unit of measurement. Used for images that may have a non-square aspect ratio, but no meaningful absolute dimensions
 									    // 2: inch
 									    // 3: centimeter
-	uint16_t BitsPerSample;             // Number of bits per component
-	std::string Software;               // Software used
-	std::string DateTime;               // File change date and time
-	std::string DateTimeOriginal;       // Original file date and time (may not exist)
-	std::string DateTimeDigitized;      // Digitization date and time (may not exist)
-	std::string SubSecTimeOriginal;     // Sub-second time that original picture was taken
-	std::string Copyright;              // File copyright information
-	double ExposureTime;                // Exposure time in seconds
-	double FNumber;                     // F/stop
-	uint16_t ExposureProgram;           // Exposure program
+	std::optional<uint16_t> BitsPerSample;             // Number of bits per component
+	std::optional<std::string> Software;               // Software used
+	std::optional<std::string> DateTime;               // File change date and time
+	std::optional<std::string> DateTimeOriginal;       // Original file date and time (may not exist)
+	std::optional<std::string> DateTimeDigitized;      // Digitization date and time (may not exist)
+	std::optional<std::string> SubSecTimeOriginal;     // Sub-second time that original picture was taken
+	std::optional<std::string> Copyright;              // File copyright information
+	std::optional<double> ExposureTime;                // Exposure time in seconds
+	std::optional<double> FNumber;                     // F/stop
+	std::optional<uint16_t> ExposureProgram;           // Exposure program
 	                                    // 0: not defined
 	                                    // 1: manual
 	                                    // 2: normal program
@@ -184,14 +185,14 @@ public:
 	                                    // 6: action program
 	                                    // 7: portrait mode
 	                                    // 8: landscape mode
-	uint16_t ISOSpeedRatings;           // ISO speed
-	double ShutterSpeedValue;           // Shutter speed (reciprocal of exposure time)
-	double ApertureValue;               // The lens aperture
-	double BrightnessValue;             // The value of brightness
-	double ExposureBiasValue;           // Exposure bias value in EV
-	double SubjectDistance;             // Distance to focus point in meters
-	double FocalLength;                 // Focal length of lens in millimeters
-	uint16_t Flash;                     // Flash info
+	std::optional<uint16_t> ISOSpeedRatings;           // ISO speed
+	std::optional<double> ShutterSpeedValue;           // Shutter speed (reciprocal of exposure time)
+	std::optional<double> ApertureValue;               // The lens aperture
+	std::optional<double> BrightnessValue;             // The value of brightness
+	std::optional<double> ExposureBiasValue;           // Exposure bias value in EV
+	std::optional<double> SubjectDistance;             // Distance to focus point in meters
+	std::optional<double> FocalLength;                 // Focal length of lens in millimeters
+	std::optional<uint16_t> Flash;                     // Flash info
 	                                    // Flash used (Flash&1)
 	                                    // 0: no flash, >0: flash used
 	                                    // Flash returned light status ((Flash & 6) >> 1)
@@ -208,7 +209,7 @@ public:
 	                                    // 0: flash function present, >0: no flash function
 	                                    // Flash red-eye ((Flash & 64) >> 6)
 	                                    // 0: no red-eye reduction mode or unknown, >0: red-eye reduction supported
-	uint16_t MeteringMode;              // Metering mode
+	std::optional<uint16_t> MeteringMode;              // Metering mode
 	                                    // 0: unknown
 	                                    // 1: average
 	                                    // 2: center weighted average
@@ -216,7 +217,7 @@ public:
 	                                    // 4: multi-spot
 	                                    // 5: pattern
 	                                    // 6: partial
-	uint16_t LightSource;               // Kind of light source
+	std::optional<uint16_t> LightSource;               // Kind of light source
 	                                    // 0: unknown
 	                                    // 1: daylight
 	                                    // 2: fluorescent
@@ -237,63 +238,63 @@ public:
 										// 22: D75
 										// 23: D50
 	                                    // 24: ISO studio tungsten
-	uint16_t ProjectionType;            // Projection type
+	std::optional<uint16_t> ProjectionType;            // Projection type
 									    // 0: unknown projection
 									    // 1: perspective projection
 									    // 2: equirectangular/spherical projection
-	std::vector<uint16_t> SubjectArea;  // Location and area of the main subject in the overall scene expressed in relation to the upper left as origin, prior to rotation
+	std::optional<std::vector<uint16_t>> SubjectArea;  // Location and area of the main subject in the overall scene expressed in relation to the upper left as origin, prior to rotation
 	                                    // 0: unknown
 	                                    // 2: location of the main subject as coordinates (first value is the X coordinate and second is the Y coordinate)
 	                                    // 3: area of the main subject as a circle (first value is the center X coordinate, second is the center Y coordinate, and third is the diameter)
 	                                    // 4: area of the main subject as a rectangle (first value is the center X coordinate, second is the center Y coordinate, third is the width of the area, and fourth is the height of the area)
 	struct TINYEXIF_LIB Calibration_t { // Camera calibration information
-		double FocalLength;             // Focal length (pixels)
-		double OpticalCenterX;          // Principal point X (pixels)
-		double OpticalCenterY;          // Principal point Y (pixels)
+		std::optional<double> FocalLength;             // Focal length (pixels)
+		std::optional<double> OpticalCenterX;          // Principal point X (pixels)
+		std::optional<double> OpticalCenterY;          // Principal point Y (pixels)
 	} Calibration;
 	struct TINYEXIF_LIB LensInfo_t {    // Lens information
-		double FStopMin;                // Min aperture (f-stop)
-		double FStopMax;                // Max aperture (f-stop)
-		double FocalLengthMin;          // Min focal length (mm)
-		double FocalLengthMax;          // Max focal length (mm)
-		double DigitalZoomRatio;        // Digital zoom ratio when the image was shot
-		double FocalLengthIn35mm;       // Focal length in 35mm film
-		double FocalPlaneXResolution;   // Number of pixels in the image width (X) direction per FocalPlaneResolutionUnit on the camera focal plane (may not exist)
-		double FocalPlaneYResolution;   // Number of pixels in the image width (Y) direction per FocalPlaneResolutionUnit on the camera focal plane (may not exist)
-		uint16_t FocalPlaneResolutionUnit;// Unit for measuring FocalPlaneXResolution and FocalPlaneYResolution (may not exist)
+		std::optional<double> FStopMin;                // Min aperture (f-stop)
+		std::optional<double> FStopMax;                // Max aperture (f-stop)
+		std::optional<double> FocalLengthMin;          // Min focal length (mm)
+		std::optional<double> FocalLengthMax;          // Max focal length (mm)
+		std::optional<double> DigitalZoomRatio;        // Digital zoom ratio when the image was shot
+		std::optional<double> FocalLengthIn35mm;       // Focal length in 35mm film
+		std::optional<double> FocalPlaneXResolution;   // Number of pixels in the image width (X) direction per FocalPlaneResolutionUnit on the camera focal plane (may not exist)
+		std::optional<double> FocalPlaneYResolution;   // Number of pixels in the image width (Y) direction per FocalPlaneResolutionUnit on the camera focal plane (may not exist)
+		std::optional<uint16_t> FocalPlaneResolutionUnit;// Unit for measuring FocalPlaneXResolution and FocalPlaneYResolution (may not exist)
 										// 0: unspecified in EXIF data
 										// 1: no absolute unit of measurement
 										// 2: inch
 										// 3: centimeter
-		std::string Make;               // Lens manufacturer
-		std::string Model;              // Lens model
+		std::optional<std::string> Make;               // Lens manufacturer
+		std::optional<std::string> Model;              // Lens model
 	} LensInfo;
 	struct TINYEXIF_LIB Geolocation_t { // GPS information embedded in file
-		double Latitude;                // Image latitude expressed as decimal
-		double Longitude;               // Image longitude expressed as decimal
-		double Altitude;                // Altitude in meters, relative to sea level
-		int8_t AltitudeRef;             // 0: above sea level, -1: below sea level
-		double RelativeAltitude;        // Relative altitude in meters
-		double RollDegree;              // Flight roll in degrees
-		double PitchDegree;             // Flight pitch in degrees
-		double YawDegree;               // Flight yaw in degrees
-		double SpeedX;                  // Flight speed on X in meters/second
-		double SpeedY;                  // Flight speed on Y in meters/second
-		double SpeedZ;                  // Flight speed on Z in meters/second
-		double AccuracyXY;              // GPS accuracy on XY in meters
-		double AccuracyZ;               // GPS accuracy on Z in meters
-		double GPSDOP;                  // GPS DOP (data degree of precision)
-		uint16_t GPSDifferential;       // Differential correction applied to the GPS receiver (may not exist)
+		std::optional<double> Latitude;                // Image latitude expressed as decimal
+		std::optional<double> Longitude;               // Image longitude expressed as decimal
+		std::optional<double> Altitude;                // Altitude in meters, relative to sea level
+		std::optional<int8_t> AltitudeRef;             // 0: above sea level, -1: below sea level
+		std::optional<double> RelativeAltitude;        // Relative altitude in meters
+		std::optional<double> RollDegree;              // Flight roll in degrees
+		std::optional<double> PitchDegree;             // Flight pitch in degrees
+		std::optional<double> YawDegree;               // Flight yaw in degrees
+		std::optional<double> SpeedX;                  // Flight speed on X in meters/second
+		std::optional<double> SpeedY;                  // Flight speed on Y in meters/second
+		std::optional<double> SpeedZ;                  // Flight speed on Z in meters/second
+		std::optional<double> AccuracyXY;              // GPS accuracy on XY in meters
+		std::optional<double> AccuracyZ;               // GPS accuracy on Z in meters
+		std::optional<double> GPSDOP;                  // GPS DOP (data degree of precision)
+		std::optional<uint16_t> GPSDifferential;       // Differential correction applied to the GPS receiver (may not exist)
 										// 0: measurement without differential correction
-										// 1: differential correction applied 
-		std::string GPSMapDatum;        // Geodetic survey data (may not exist)
-		std::string GPSTimeStamp;       // Time as UTC (Coordinated Universal Time) (may not exist)
-		std::string GPSDateStamp;       // A character string recording date and time information relative to UTC (Coordinated Universal Time) YYYY:MM:DD (may not exist)
+										// 1: differential correction applied
+		std::optional<std::string> GPSMapDatum;        // Geodetic survey data (may not exist)
+		std::optional<std::string> GPSTimeStamp;       // Time as UTC (Coordinated Universal Time) (may not exist)
+		std::optional<std::string> GPSDateStamp;       // A character string recording date and time information relative to UTC (Coordinated Universal Time) YYYY:MM:DD (may not exist)
 		struct Coord_t {
-			double degrees;
-			double minutes;
-			double seconds;
-			uint8_t direction;
+			std::optional<double> degrees;
+			std::optional<double> minutes;
+			std::optional<double> seconds;
+			std::optional<uint8_t> direction;
 		} LatComponents, LonComponents; // Latitude/Longitude expressed in deg/min/sec
 		void parseCoords();             // Convert Latitude/Longitude from deg/min/sec to decimal
 		bool hasLatLon() const;         // Return true if (lat,lon) is available
@@ -303,15 +304,15 @@ public:
 		bool hasSpeed() const;          // Return true if (speedX,speedY,speedZ) is available
 	} GeoLocation;
 	struct TINYEXIF_LIB GPano_t {           // Spherical metadata. https://developers.google.com/streetview/spherical-metadata
-		double PosePitchDegrees;        // Pitch, measured in degrees above the horizon, for the center in the image. Value must be >= -90 and <= 90.
-		double PoseRollDegrees;         // Roll, measured in degrees, of the image where level with the horizon is 0. As roll increases, the horizon rotates counterclockwise in the image. Value must be > -180 and <= 180.
+		std::optional<double> PosePitchDegrees;        // Pitch, measured in degrees above the horizon, for the center in the image. Value must be >= -90 and <= 90.
+		std::optional<double> PoseRollDegrees;         // Roll, measured in degrees, of the image where level with the horizon is 0. As roll increases, the horizon rotates counterclockwise in the image. Value must be > -180 and <= 180.
 		bool hasPosePitchDegrees() const; // Return true if PosePitchDegrees is available
 		bool hasPoseRollDegrees() const; // Return true if PoseRollDegrees is available
 	} GPano;
 	struct TINYEXIF_LIB MicroVideo_t {      // Google camera video file in metadata
-		uint32_t HasMicroVideo;         // not zero if exists
-		uint32_t MicroVideoVersion;     // just regularinfo
-		uint32_t MicroVideoOffset;      // offset from end of file
+		std::optional<uint32_t> HasMicroVideo;         // not zero if exists
+		std::optional<uint32_t> MicroVideoVersion;     // just regularinfo
+		std::optional<uint32_t> MicroVideoOffset;      // offset from end of file
 	} MicroVideo;
 };
 
