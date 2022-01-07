@@ -9,25 +9,25 @@
   Based on the easyexif library (2013 version)
     https://github.com/mayanklahiri/easyexif
   of Mayank Lahiri (mlahiri@gmail.com).
-  
-  Redistribution and use in source and binary forms, with or without 
+
+  Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
 
-   - Redistributions of source code must retain the above copyright notice, 
+   - Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
-   - Redistributions in binary form must reproduce the above copyright notice, 
-     this list of conditions and the following disclaimer in the documentation 
+   - Redistributions in binary form must reproduce the above copyright notice,
+     this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY EXPRESS 
-  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
-  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN 
-  NO EVENT SHALL THE FREEBSD PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY 
-  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
-  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY EXPRESS
+  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
+  NO EVENT SHALL THE FREEBSD PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
   EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
@@ -211,57 +211,57 @@ public:
 	std::string FetchString() const {
 		return parseString(buf, length, GetData(), tiff_header_start, len, alignIntel);
 	}
-	bool Fetch(std::string& val) const {
+	bool Fetch(std::optional<std::string>& val) const {
 		if (format != 2 || length == 0)
 			return false;
 		val = FetchString();
 		return true;
 	}
-	bool Fetch(uint8_t& val) const {
+	bool Fetch(std::optional<uint8_t>& val) const {
 		if ((format != 1 && format != 2 && format != 6) || length == 0)
 			return false;
 		val = parse8(buf + offs + 8);
 		return true;
 	}
-	bool Fetch(uint16_t& val) const {
+	bool Fetch(std::optional<uint16_t>& val) const {
 		if (!IsShort() || length == 0)
 			return false;
 		val = parse16(buf + offs + 8, alignIntel);
 		return true;
 	}
-	bool Fetch(uint16_t& val, uint32_t idx) const {
+	bool Fetch(std::optional<uint16_t>& val, uint32_t idx) const {
 		if (!IsShort() || length <= idx)
 			return false;
 		val = parse16(buf + GetSubIFD() + idx*2, alignIntel);
 		return true;
 	}
-	bool Fetch(uint32_t& val) const {
+	bool Fetch(std::optional<uint32_t>& val) const {
 		if (!IsLong() || length == 0)
 			return false;
 		val = parse32(buf + offs + 8, alignIntel);
 		return true;
 	}
-	bool Fetch(float& val) const {
+	bool Fetch(std::optional<float>& val) const {
 		if (!IsFloat() || length == 0)
 			return false;
 		val = parseFloat(buf + offs + 8, alignIntel);
 		return true;
 	}
-	bool Fetch(double& val) const {
+	bool Fetch(std::optional<double>& val) const {
 		if (!IsRational() || length == 0)
 			return false;
 		val = parseRational(buf + GetSubIFD(), alignIntel, IsSRational());
 		return true;
 	}
-	bool Fetch(double& val, uint32_t idx) const {
+	bool Fetch(std::optional<double>& val, uint32_t idx) const {
 		if (!IsRational() || length <= idx)
 			return false;
 		val = parseRational(buf + GetSubIFD() + idx*8, alignIntel, IsSRational());
 		return true;
 	}
 
-	bool FetchFloat(double& val) const {
-		float _val;
+	bool FetchFloat(std::optional<double>& val) const {
+		std::optional<float> _val;
 		if (!Fetch(_val))
 			return false;
 		val = _val;
@@ -379,12 +379,12 @@ void EXIFInfo::parseIFDImage(EntryParser& parser, unsigned& exif_sub_ifd_offset,
 		break;
 
 	case 0x011a:
-		// XResolution 
+		// XResolution
 		parser.Fetch(XResolution);
 		break;
 
 	case 0x011b:
-		// YResolution 
+		// YResolution
 		parser.Fetch(YResolution);
 		break;
 
@@ -406,7 +406,7 @@ void EXIFInfo::parseIFDImage(EntryParser& parser, unsigned& exif_sub_ifd_offset,
 	case 0x1001:
 		// Original Image width
 		if (!parser.Fetch(RelatedImageWidth)) {
-			uint16_t _RelatedImageWidth;
+			std::optional<uint16_t> _RelatedImageWidth;
 			if (parser.Fetch(_RelatedImageWidth))
 				RelatedImageWidth = _RelatedImageWidth;
 		}
@@ -415,7 +415,7 @@ void EXIFInfo::parseIFDImage(EntryParser& parser, unsigned& exif_sub_ifd_offset,
 	case 0x1002:
 		// Original Image height
 		if (!parser.Fetch(RelatedImageHeight)) {
-			uint16_t _RelatedImageHeight;
+			std::optional<uint16_t> _RelatedImageHeight;
 			if (parser.Fetch(_RelatedImageHeight))
 				RelatedImageHeight = _RelatedImageHeight;
 		}
@@ -489,13 +489,13 @@ void EXIFInfo::parseIFDExif(EntryParser& parser) {
 	case 0x9201:
 		// Shutter speed value
 		parser.Fetch(ShutterSpeedValue);
-		ShutterSpeedValue = 1.0/exp(ShutterSpeedValue*log(2));
+		ShutterSpeedValue = 1.0/exp(ShutterSpeedValue.value()*log(2));
 		break;
 
 	case 0x9202:
 		// Aperture value
 		parser.Fetch(ApertureValue);
-		ApertureValue = exp(ApertureValue*log(2)*0.5);
+		ApertureValue = exp(ApertureValue.value()*log(2)*0.5);
 		break;
 
 	case 0x9203:
@@ -504,7 +504,7 @@ void EXIFInfo::parseIFDExif(EntryParser& parser) {
 		break;
 
 	case 0x9204:
-		// Exposure bias value 
+		// Exposure bias value
 		parser.Fetch(ExposureBiasValue);
 		break;
 
@@ -536,9 +536,12 @@ void EXIFInfo::parseIFDExif(EntryParser& parser) {
 	case 0x9214:
 		// Subject area
 		if (parser.IsShort() && parser.GetLength() > 1) {
-			SubjectArea.resize(parser.GetLength());
-			for (uint32_t i=0; i<parser.GetLength(); ++i)
-				parser.Fetch(SubjectArea[i], i);
+			SubjectArea->resize(parser.GetLength());
+			for (uint32_t i=0; i<parser.GetLength(); ++i) {
+				std::optional<uint16_t> value;
+				parser.Fetch(value, i);
+				(*SubjectArea)[i] = value.value();
+			}
 		}
 		break;
 
@@ -555,7 +558,7 @@ void EXIFInfo::parseIFDExif(EntryParser& parser) {
 	case 0xa002:
 		// EXIF Image width
 		if (!parser.Fetch(ImageWidth)) {
-			uint16_t _ImageWidth;
+			std::optional<uint16_t> _ImageWidth;
 			if (parser.Fetch(_ImageWidth))
 				ImageWidth = _ImageWidth;
 		}
@@ -564,7 +567,7 @@ void EXIFInfo::parseIFDExif(EntryParser& parser) {
 	case 0xa003:
 		// EXIF Image height
 		if (!parser.Fetch(ImageHeight)) {
-			uint16_t _ImageHeight;
+			std::optional<uint16_t> _ImageHeight;
 			if (parser.Fetch(_ImageHeight))
 				ImageHeight = _ImageHeight;
 		}
@@ -587,10 +590,10 @@ void EXIFInfo::parseIFDExif(EntryParser& parser) {
 
 	case 0xa215:
 		// Exposure Index and ISO Speed Rating are often used interchangeably
-		if (ISOSpeedRatings == 0) {
-			double ExposureIndex;
+		if (!ISOSpeedRatings.has_value()) {
+			std::optional<double> ExposureIndex;
 			if (parser.Fetch(ExposureIndex))
-				ISOSpeedRatings = (uint16_t)ExposureIndex;
+				ISOSpeedRatings = (uint16_t)ExposureIndex.value();
 		}
 		break;
 
@@ -602,9 +605,9 @@ void EXIFInfo::parseIFDExif(EntryParser& parser) {
 	case 0xa405:
 		// Focal length in 35mm film
 		if (!parser.Fetch(LensInfo.FocalLengthIn35mm)) {
-			uint16_t _FocalLengthIn35mm;
+			std::optional<uint16_t> _FocalLengthIn35mm;
 			if (parser.Fetch(_FocalLengthIn35mm))
-				LensInfo.FocalLengthIn35mm = (double)_FocalLengthIn35mm;
+				LensInfo.FocalLengthIn35mm = (double)_FocalLengthIn35mm.value();
 		}
 		break;
 
@@ -637,7 +640,7 @@ void EXIFInfo::parseIFDExif(EntryParser& parser) {
 void EXIFInfo::parseIFDMakerNote(EntryParser& parser) {
 	const unsigned startOff = parser.GetOffset();
 	const uint32_t off = parser.GetSubIFD();
-	if (0 != strcasecmp(Make.c_str(), "DJI"))
+	if (0 != strcasecmp(Make.value_or("").c_str(), "DJI"))
 		return;
 	int num_entries = EntryParser::parse16(parser.GetBuffer()+off, parser.IsIntelAligned());
 	if (uint32_t(2 + 12 * num_entries) > parser.GetLength())
@@ -645,9 +648,9 @@ void EXIFInfo::parseIFDMakerNote(EntryParser& parser) {
 	parser.Init(off+2);
 	parser.ParseTag();
 	--num_entries;
-	std::string maker;
+	std::optional<std::string> maker;
 	if (parser.GetTag() == 1 && parser.Fetch(maker)) {
-		if (0 == strcasecmp(maker.c_str(), "DJI")) {
+		if (0 == strcasecmp(maker.value_or("").c_str(), "DJI")) {
 			while (--num_entries >= 0) {
 				parser.ParseTag();
 				switch (parser.GetTag()) {
@@ -720,7 +723,7 @@ void EXIFInfo::parseIFDGPS(EntryParser& parser) {
 
 	case 5:
 		// GPS altitude reference (below or above sea level)
-		parser.Fetch((uint8_t&)GeoLocation.AltitudeRef);
+		parser.Fetch((std::optional<uint8_t>&)GeoLocation.AltitudeRef);
 		break;
 
 	case 6:
@@ -731,12 +734,12 @@ void EXIFInfo::parseIFDGPS(EntryParser& parser) {
 	case 7:
 		// GPS timestamp
 		if (parser.IsRational() && parser.GetLength() == 3) {
-			double h,m,s;
+			std::optional<double> h,m,s;
 			parser.Fetch(h, 0);
 			parser.Fetch(m, 1);
 			parser.Fetch(s, 2);
 			char buffer[256];
-			snprintf(buffer, 256, "%g %g %g", h, m, s);
+			snprintf(buffer, 256, "%g %g %g", h.value(), m.value(), s.value());
 			GeoLocation.GPSTimeStamp = buffer;
 		}
 		break;
@@ -936,7 +939,7 @@ int EXIFInfo::parseFromEXIFSegment(const uint8_t* buf, unsigned len) {
 	// Now parsing the TIFF header. The first two bytes are either "II" or
 	// "MM" for Intel or Motorola byte alignment. Sanity check by parsing
 	// the uint16_t that follows, making sure it equals 0x2a. The
-	// last 4 bytes are an offset into the first IFD, which are added to 
+	// last 4 bytes are an offset into the first IFD, which are added to
 	// the global offset counter. For this block, we expect the following
 	// minimum size:
 	//  2 bytes: 'II' or 'MM'
@@ -1054,22 +1057,29 @@ int EXIFInfo::parseFromXMPSegmentXML(const char* szXML, unsigned len) {
 		return PARSE_ABSENT_DATA;
 
 	// Try parsing the XMP content for tiff details.
-	if (Orientation == 0) {
+	if (!Orientation.has_value()) {
 		uint32_t _Orientation(0);
 		document->QueryUnsignedAttribute("tiff:Orientation", &_Orientation);
 		Orientation = (uint16_t)_Orientation;
 	}
-	if (ImageWidth == 0 && ImageHeight == 0) {
-		document->QueryUnsignedAttribute("tiff:ImageWidth", &ImageWidth);
-		if (document->QueryUnsignedAttribute("tiff:ImageHeight", &ImageHeight) != tinyxml2::XML_SUCCESS)
-			document->QueryUnsignedAttribute("tiff:ImageLength", &ImageHeight) ;
+	if (ImageWidth.has_value() && ImageHeight.has_value()) {
+		uint32_t _ImageWidth, _ImageHeight;
+		if (document->QueryUnsignedAttribute("tiff:ImageWidth", &_ImageWidth) == tinyxml2::XML_SUCCESS)
+			ImageWidth = _ImageWidth;
+		if (document->QueryUnsignedAttribute("tiff:ImageHeight", &_ImageHeight) == tinyxml2::XML_SUCCESS)
+			ImageHeight = _ImageHeight;
+		else if (document->QueryUnsignedAttribute("tiff:ImageLength", &_ImageHeight) == tinyxml2::XML_SUCCESS)
+			ImageHeight = _ImageHeight;
 	}
-	if (XResolution == 0 && YResolution == 0 && ResolutionUnit == 0) {
-		document->QueryDoubleAttribute("tiff:XResolution", &XResolution);
-		document->QueryDoubleAttribute("tiff:YResolution", &YResolution);
-		uint32_t _ResolutionUnit(0);
-		document->QueryUnsignedAttribute("tiff:ResolutionUnit", &_ResolutionUnit);
-		ResolutionUnit = (uint16_t)_ResolutionUnit;
+	if (XResolution.has_value() && YResolution.has_value() && ResolutionUnit.has_value()) {
+		double _XResolution, _YResolution;
+		if (document->QueryDoubleAttribute("tiff:XResolution", &_XResolution) == tinyxml2::XML_SUCCESS)
+			XResolution = _XResolution;
+		if (document->QueryDoubleAttribute("tiff:YResolution", &_YResolution) == tinyxml2::XML_SUCCESS)
+			YResolution = _YResolution;
+		uint32_t _ResolutionUnit;
+		if (document->QueryUnsignedAttribute("tiff:ResolutionUnit", &_ResolutionUnit) == tinyxml2::XML_SUCCESS)
+			ResolutionUnit = (uint16_t)_ResolutionUnit;
 	}
 
 	// Try parsing the XMP content for projection type.
@@ -1092,7 +1102,7 @@ int EXIFInfo::parseFromXMPSegmentXML(const char* szXML, unsigned len) {
 	struct ParseXMP	{
 		// try yo fetch the value both from the attribute and child element
 		// and parse if needed rational numbers stored as string fraction
-		static bool Value(const tinyxml2::XMLElement* document, const char* name, double& value) {
+		static bool Value(const tinyxml2::XMLElement* document, const char* name, std::optional<double>& value) {
 			const char* szAttribute = document->Attribute(name);
 			if (szAttribute == NULL) {
 				const tinyxml2::XMLElement* const element(document->FirstChildElement(name));
@@ -1108,7 +1118,7 @@ int EXIFInfo::parseFromXMPSegmentXML(const char* szXML, unsigned len) {
 			return false;
 		}
 		// same as previous function but with unsigned int results
-		static bool Value(const tinyxml2::XMLElement* document, const char* name, uint32_t& value) {
+		static bool Value(const tinyxml2::XMLElement* document, const char* name, std::optional<uint32_t>& value) {
 			const char* szAttribute = document->Attribute(name);
 			if (szAttribute == NULL) {
 				const tinyxml2::XMLElement* const element(document->FirstChildElement(name));
@@ -1120,7 +1130,9 @@ int EXIFInfo::parseFromXMPSegmentXML(const char* szXML, unsigned len) {
 		}
 	};
 	const char* szAbout(document->Attribute("rdf:about"));
-	if (0 == strcasecmp(Make.c_str(), "DJI") || (szAbout != NULL && 0 == strcasecmp(szAbout, "DJI Meta Data"))) {
+	const char* make_value = Make.value_or("").c_str();
+
+	if (0 == strcasecmp(make_value, "DJI") || (szAbout != NULL && 0 == strcasecmp(szAbout, "DJI Meta Data"))) {
 		ParseXMP::Value(document, "drone-dji:AbsoluteAltitude", GeoLocation.Altitude);
 		ParseXMP::Value(document, "drone-dji:RelativeAltitude", GeoLocation.RelativeAltitude);
 		ParseXMP::Value(document, "drone-dji:GimbalRollDegree", GeoLocation.RollDegree);
@@ -1130,23 +1142,23 @@ int EXIFInfo::parseFromXMPSegmentXML(const char* szXML, unsigned len) {
 		ParseXMP::Value(document, "drone-dji:CalibratedOpticalCenterX", Calibration.OpticalCenterX);
 		ParseXMP::Value(document, "drone-dji:CalibratedOpticalCenterY", Calibration.OpticalCenterY);
 	} else
-	if (0 == strcasecmp(Make.c_str(), "senseFly") || 0 == strcasecmp(Make.c_str(), "Sentera")) {
+	if (0 == strcasecmp(make_value, "senseFly") || 0 == strcasecmp(make_value, "Sentera")) {
 		ParseXMP::Value(document, "Camera:Roll", GeoLocation.RollDegree);
 		if (ParseXMP::Value(document, "Camera:Pitch", GeoLocation.PitchDegree)) {
 			// convert to DJI format: senseFly uses pitch 0 as NADIR, whereas DJI -90
-			GeoLocation.PitchDegree = Tools::NormD180(GeoLocation.PitchDegree-90.0);
+			GeoLocation.PitchDegree = Tools::NormD180(GeoLocation.PitchDegree.value()-90.0);
 		}
 		ParseXMP::Value(document, "Camera:Yaw", GeoLocation.YawDegree);
 		ParseXMP::Value(document, "Camera:GPSXYAccuracy", GeoLocation.AccuracyXY);
 		ParseXMP::Value(document, "Camera:GPSZAccuracy", GeoLocation.AccuracyZ);
 	} else
-	if (0 == strcasecmp(Make.c_str(), "PARROT")) {
+	if (0 == strcasecmp(make_value, "PARROT")) {
 		ParseXMP::Value(document, "Camera:Roll", GeoLocation.RollDegree) ||
 		ParseXMP::Value(document, "drone-parrot:CameraRollDegree", GeoLocation.RollDegree);
 		if (ParseXMP::Value(document, "Camera:Pitch", GeoLocation.PitchDegree) ||
 			ParseXMP::Value(document, "drone-parrot:CameraPitchDegree", GeoLocation.PitchDegree)) {
 			// convert to DJI format: senseFly uses pitch 0 as NADIR, whereas DJI -90
-			GeoLocation.PitchDegree = Tools::NormD180(GeoLocation.PitchDegree-90.0);
+			GeoLocation.PitchDegree = Tools::NormD180(GeoLocation.PitchDegree.value()-90.0);
 		}
 		ParseXMP::Value(document, "Camera:Yaw", GeoLocation.YawDegree) ||
 		ParseXMP::Value(document, "drone-parrot:CameraYawDegree", GeoLocation.YawDegree);
@@ -1168,153 +1180,153 @@ int EXIFInfo::parseFromXMPSegmentXML(const char* szXML, unsigned len) {
 
 void EXIFInfo::Geolocation_t::parseCoords() {
 	// Convert GPS latitude
-	if (LatComponents.degrees != DBL_MAX ||
-		LatComponents.minutes != 0 ||
-		LatComponents.seconds != 0) {
+	if (LatComponents.degrees.has_value() ||
+		LatComponents.minutes.has_value() ||
+		LatComponents.seconds.has_value()) {
 		Latitude =
-			LatComponents.degrees +
-			LatComponents.minutes / 60 +
-			LatComponents.seconds / 3600;
+			LatComponents.degrees.value() +
+			LatComponents.minutes.value() / 60 +
+			LatComponents.seconds.value() / 3600;
 		if ('S' == LatComponents.direction)
-			Latitude = -Latitude;
+			Latitude = -Latitude.value();
 	}
 	// Convert GPS longitude
-	if (LonComponents.degrees != DBL_MAX ||
-		LonComponents.minutes != 0 ||
-		LonComponents.seconds != 0) {
+	if (LonComponents.degrees.has_value() ||
+		LonComponents.minutes.has_value() ||
+		LonComponents.seconds.has_value()) {
 		Longitude =
-			LonComponents.degrees +
-			LonComponents.minutes / 60 +
-			LonComponents.seconds / 3600;
+			LonComponents.degrees.value() +
+			LonComponents.minutes.value() / 60 +
+			LonComponents.seconds.value() / 3600;
 		if ('W' == LonComponents.direction)
-			Longitude = -Longitude;
+			Longitude = -Longitude.value();
 	}
 	// Convert GPS altitude
 	if (hasAltitude() &&
-		AltitudeRef == 1) {
-		Altitude = -Altitude;
+		AltitudeRef.value() == 1) {
+		Altitude = -Altitude.value();
 	}
 }
 
 bool EXIFInfo::Geolocation_t::hasLatLon() const {
-	return Latitude != DBL_MAX && Longitude != DBL_MAX;
+	return Latitude.has_value() && Longitude.has_value();
 }
 bool EXIFInfo::Geolocation_t::hasAltitude() const {
-	return Altitude != DBL_MAX;
+	return Altitude.has_value();
 }
 bool EXIFInfo::Geolocation_t::hasRelativeAltitude() const {
-	return RelativeAltitude != DBL_MAX;
+	return RelativeAltitude.has_value();
 }
 bool EXIFInfo::Geolocation_t::hasOrientation() const {
-	return RollDegree != DBL_MAX && PitchDegree != DBL_MAX && YawDegree != DBL_MAX;
+	return RollDegree.has_value() && PitchDegree.has_value() && YawDegree.has_value();
 }
 bool EXIFInfo::Geolocation_t::hasSpeed() const {
-	return SpeedX != DBL_MAX && SpeedY != DBL_MAX && SpeedZ != DBL_MAX;
+	return SpeedX.has_value() && SpeedY.has_value() && SpeedZ.has_value();
 }
 
 bool EXIFInfo::GPano_t::hasPosePitchDegrees() const {
-	return PosePitchDegrees != DBL_MAX;
+	return PosePitchDegrees.has_value();
 }
 
 bool EXIFInfo::GPano_t::hasPoseRollDegrees() const {
-	return PoseRollDegrees != DBL_MAX;
+	return PoseRollDegrees.has_value();
 }
 
 void EXIFInfo::clear() {
 	Fields = FIELD_NA;
 
 	// Strings
-	ImageDescription  = "";
-	Make              = "";
-	Model             = "";
-	SerialNumber      = "";
-	Software          = "";
-	DateTime          = "";
-	DateTimeOriginal  = "";
-	DateTimeDigitized = "";
-	SubSecTimeOriginal= "";
-	Copyright         = "";
+	ImageDescription  = std::nullopt;
+	Make              = std::nullopt;
+	Model             = std::nullopt;
+	SerialNumber      = std::nullopt;
+	Software          = std::nullopt;
+	DateTime          = std::nullopt;
+	DateTimeOriginal  = std::nullopt;
+	DateTimeDigitized = std::nullopt;
+	SubSecTimeOriginal= std::nullopt;
+	Copyright         = std::nullopt;
 
 	// Shorts / unsigned / double
-	ImageWidth        = 0;
-	ImageHeight       = 0;
-	RelatedImageWidth = 0;
-	RelatedImageHeight= 0;
-	Orientation       = 0;
-	XResolution       = 0;
-	YResolution       = 0;
-	ResolutionUnit    = 0;
-	BitsPerSample     = 0;
-	ExposureTime      = 0;
-	FNumber           = 0;
-	ExposureProgram   = 0;
-	ISOSpeedRatings   = 0;
-	ShutterSpeedValue = 0;
-	ApertureValue     = 0;
-	BrightnessValue   = 0;
-	ExposureBiasValue = 0;
-	SubjectDistance   = 0;
-	FocalLength       = 0;
-	Flash             = 0;
-	MeteringMode      = 0;
-	LightSource       = 0;
-	ProjectionType    = 0;
-	SubjectArea.clear();
+	ImageWidth        = std::nullopt;
+	ImageHeight       = std::nullopt;
+	RelatedImageWidth = std::nullopt;
+	RelatedImageHeight= std::nullopt;
+	Orientation       = std::nullopt;
+	XResolution       = std::nullopt;
+	YResolution       = std::nullopt;
+	ResolutionUnit    = std::nullopt;
+	BitsPerSample     = std::nullopt;
+	ExposureTime      = std::nullopt;
+	FNumber           = std::nullopt;
+	ExposureProgram   = std::nullopt;
+	ISOSpeedRatings   = std::nullopt;
+	ShutterSpeedValue = std::nullopt;
+	ApertureValue     = std::nullopt;
+	BrightnessValue   = std::nullopt;
+	ExposureBiasValue = std::nullopt;
+	SubjectDistance   = std::nullopt;
+	FocalLength       = std::nullopt;
+	Flash             = std::nullopt;
+	MeteringMode      = std::nullopt;
+	LightSource       = std::nullopt;
+	ProjectionType    = std::nullopt;
+	SubjectArea       = std::nullopt;
 
 	// Calibration
-	Calibration.FocalLength = 0;
-	Calibration.OpticalCenterX = 0;
-	Calibration.OpticalCenterY = 0;
+	Calibration.FocalLength = std::nullopt;
+	Calibration.OpticalCenterX = std::nullopt;
+	Calibration.OpticalCenterY = std::nullopt;
 
 	// LensInfo
-	LensInfo.FocalLengthMax = 0;
-	LensInfo.FocalLengthMin = 0;
-	LensInfo.FStopMax = 0;
-	LensInfo.FStopMin = 0;
-	LensInfo.DigitalZoomRatio = 0;
-	LensInfo.FocalLengthIn35mm = 0;
-	LensInfo.FocalPlaneXResolution = 0;
-	LensInfo.FocalPlaneYResolution = 0;
-	LensInfo.FocalPlaneResolutionUnit = 0;
-	LensInfo.Make = "";
-	LensInfo.Model = "";
+	LensInfo.FocalLengthMax = std::nullopt;
+	LensInfo.FocalLengthMin = std::nullopt;
+	LensInfo.FStopMax = std::nullopt;
+	LensInfo.FStopMin = std::nullopt;
+	LensInfo.DigitalZoomRatio = std::nullopt;
+	LensInfo.FocalLengthIn35mm = std::nullopt;
+	LensInfo.FocalPlaneXResolution = std::nullopt;
+	LensInfo.FocalPlaneYResolution = std::nullopt;
+	LensInfo.FocalPlaneResolutionUnit = std::nullopt;
+	LensInfo.Make = std::nullopt;
+	LensInfo.Model = std::nullopt;
 
 	// Geolocation
-	GeoLocation.Latitude                = DBL_MAX;
-	GeoLocation.Longitude               = DBL_MAX;
-	GeoLocation.Altitude                = DBL_MAX;
-	GeoLocation.AltitudeRef             = 0;
-	GeoLocation.RelativeAltitude        = DBL_MAX;
-	GeoLocation.RollDegree              = DBL_MAX;
-	GeoLocation.PitchDegree             = DBL_MAX;
-	GeoLocation.YawDegree               = DBL_MAX;
-	GeoLocation.SpeedX                  = DBL_MAX;
-	GeoLocation.SpeedY                  = DBL_MAX;
-	GeoLocation.SpeedZ                  = DBL_MAX;
-	GeoLocation.AccuracyXY              = 0;
-	GeoLocation.AccuracyZ               = 0;
-	GeoLocation.GPSDOP                  = 0;
-	GeoLocation.GPSDifferential         = 0;
-	GeoLocation.GPSMapDatum             = "";
-	GeoLocation.GPSTimeStamp            = "";
-	GeoLocation.GPSDateStamp            = "";
-	GeoLocation.LatComponents.degrees   = DBL_MAX;
-	GeoLocation.LatComponents.minutes   = 0;
-	GeoLocation.LatComponents.seconds   = 0;
-	GeoLocation.LatComponents.direction = 0;
-	GeoLocation.LonComponents.degrees   = DBL_MAX;
-	GeoLocation.LonComponents.minutes   = 0;
-	GeoLocation.LonComponents.seconds   = 0;
-	GeoLocation.LonComponents.direction = 0;
+	GeoLocation.Latitude                = std::nullopt;
+	GeoLocation.Longitude               = std::nullopt;
+	GeoLocation.Altitude                = std::nullopt;
+	GeoLocation.AltitudeRef             = std::nullopt;
+	GeoLocation.RelativeAltitude        = std::nullopt;
+	GeoLocation.RollDegree              = std::nullopt;
+	GeoLocation.PitchDegree             = std::nullopt;
+	GeoLocation.YawDegree               = std::nullopt;
+	GeoLocation.SpeedX                  = std::nullopt;
+	GeoLocation.SpeedY                  = std::nullopt;
+	GeoLocation.SpeedZ                  = std::nullopt;
+	GeoLocation.AccuracyXY              = std::nullopt;
+	GeoLocation.AccuracyZ               = std::nullopt;
+	GeoLocation.GPSDOP                  = std::nullopt;
+	GeoLocation.GPSDifferential         = std::nullopt;
+	GeoLocation.GPSMapDatum             = std::nullopt;
+	GeoLocation.GPSTimeStamp            = std::nullopt;
+	GeoLocation.GPSDateStamp            = std::nullopt;
+	GeoLocation.LatComponents.degrees   = std::nullopt;
+	GeoLocation.LatComponents.minutes   = std::nullopt;
+	GeoLocation.LatComponents.seconds   = std::nullopt;
+	GeoLocation.LatComponents.direction = std::nullopt;
+	GeoLocation.LonComponents.degrees   = std::nullopt;
+	GeoLocation.LonComponents.minutes   = std::nullopt;
+	GeoLocation.LonComponents.seconds   = std::nullopt;
+	GeoLocation.LonComponents.direction = std::nullopt;
 
 	// GPano
-	GPano.PosePitchDegrees = DBL_MAX;
-	GPano.PoseRollDegrees = DBL_MAX;
+	GPano.PosePitchDegrees = std::nullopt;
+	GPano.PoseRollDegrees = std::nullopt;
 
 	// Video metadata
-	MicroVideo.HasMicroVideo = 0;
-	MicroVideo.MicroVideoVersion = 0;
-	MicroVideo.MicroVideoOffset = 0;
+	MicroVideo.HasMicroVideo = std::nullopt;
+	MicroVideo.MicroVideoVersion = std::nullopt;
+	MicroVideo.MicroVideoOffset = std::nullopt;
 }
 
 } // namespace TinyEXIF
